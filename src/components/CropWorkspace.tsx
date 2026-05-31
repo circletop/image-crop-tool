@@ -87,6 +87,12 @@ export default function CropWorkspace() {
     if (!imageRef.current) return;
 
     const img = imageRef.current;
+    //修改截图比例
+    const scaleX =
+      img.naturalWidth / img.clientWidth;
+
+    const scaleY =
+      img.naturalHeight / img.clientHeight;
 
     const newResults: CropResult[] = [];
 
@@ -102,12 +108,16 @@ export default function CropWorkspace() {
 
       ctx.drawImage(
         img,
-        crop.x,
-        crop.y,
-        crop.width,
-        crop.height,
+
+        crop.x * scaleX,
+        crop.y * scaleY,
+
+        crop.width * scaleX,
+        crop.height * scaleY,
+
         0,
         0,
+
         crop.width,
         crop.height
       );
