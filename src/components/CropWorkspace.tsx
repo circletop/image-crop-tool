@@ -22,11 +22,16 @@ interface CropResult {
 export default function CropWorkspace() {
   const imageRef = useRef<HTMLImageElement | null>(null);
 
+  // 滚动容器
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+
   const [image, setImage] = useState<string | null>(null);
 
   const [crops, setCrops] = useState<CropArea[]>([]);
 
   const [results, setResults] = useState<CropResult[]>([]);
+  // 缩放比例
+  const [scale, setScale] = useState(1);
 
   // 上传图片
   const handleUpload = (
@@ -169,9 +174,9 @@ export default function CropWorkspace() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen w-screen overflow-hidden">
       {/* 左侧 */}
-      <div className="flex-1 flex flex-col p-4 overflow-auto">
+      <div className="flex-1 flex flex-col p-4 overflow-hidden">
         {/* 工具栏 */}
         <div className="mb-4 flex flex-wrap gap-3">
           <input
@@ -194,6 +199,30 @@ export default function CropWorkspace() {
           >
             开始裁剪
           </button>
+          <button
+            onClick={() =>
+              setScale((prev) =>
+                Math.max(prev - 0.1, 0.2)
+              )
+            }
+            className="px-4 py-2 bg-gray-200 rounded-xl"
+          >
+            缩小
+          </button>
+          <button
+            onClick={() =>
+              setScale((prev) =>
+                Math.min(prev + 0.1, 5)
+              )
+            }
+            className="px-4 py-2 bg-gray-200 rounded-xl"
+          >
+            放大
+          </button>
+
+          <div className="flex items-center px-3 font-medium">
+            {Math.round(scale * 100)}%
+          </div>
 
           <button
             onClick={downloadAll}
@@ -204,62 +233,77 @@ export default function CropWorkspace() {
         </div>
 
         {/* 图片区域 */}
-        <div className="relative bg-white rounded-2xl shadow overflow-hidden border min-h-[600px]">
-          {image && (
-            <>
-              <img
-                ref={imageRef}
-                src={image}
-                alt=""
-                className="max-w-full"
-              />
+        <div className="flex-1 min-h-0 mt-2">
+          <div
+            ref={scrollRef}
+            className="w-full h-full overflow-auto rounded-2xl border bg-[#f5f5f5]"
+          >
+            <div
+              className="relative inline-block"
+              style={{
+                transform: `scale(${scale})`,
+                transformOrigin: "top left",
+              }}
+            >
+              {image && (
+                <>
+                  <img
+                    ref={imageRef}
+                    src={image}
+                    alt=""
+                    draggable={false}
+                    className="max-w-none select-none"
+                  />
 
-              {crops.map((crop, index) => (
-                <Rnd
-                  key={crop.id}
-                  size={{
-                    width: crop.width,
-                    height: crop.height,
-                  }}
-                  position={{
-                    x: crop.x,
-                    y: crop.y,
-                  }}
-                  bounds="parent"
-                  onDragStop={(e, d) => {
-                    updateCrop(crop.id, {
-                      x: d.x,
-                      y: d.y,
-                    });
-                  }}
-                  onResizeStop={(
-                    e,
-                    direction,
-                    ref,
-                    delta,
-                    position
-                  ) => {
-                    updateCrop(crop.id, {
-                      width: parseInt(ref.style.width),
-                      height: parseInt(ref.style.height),
-                      ...position,
-                    });
-                  }}
-                  className="border-2 border-blue-500 bg-blue-500/10"
-                >
-                  <div className="relative w-full h-full">
-                    <div className="absolute top-0 left-0 bg-blue-500 text-white text-xs px-2 py-1">
-                      #{index + 1}
-                    </div>
-                  </div>
-                </Rnd>
-              ))}
-            </>
-          )}
+                  {crops.map((crop, index) => (
+                    <Rnd
+                      key={crop.id}
+                      size={{
+                        width: crop.width,
+                        height: crop.height,
+                      }}
+                      position={{
+                        x: crop.x,
+                        y: crop.y,
+                      }}
+                      bounds="parent"
+                      onDragStop={(e, d) => {
+                        updateCrop(crop.id, {
+                          x: d.x,
+                          y: d.y,
+                        });
+                      }}
+                      onResizeStop={(
+                        e,
+                        direction,
+                        ref,
+                        delta,
+                        position
+                      ) => {
+                        updateCrop(crop.id, {
+                          width: parseInt(ref.style.width),
+                          height: parseInt(ref.style.height),
+                          x: position.x,
+                          y: position.y,
+                        });
+                      }}
+                      className="border-2 border-blue-500 bg-blue-500/10"
+                    >
+                      <div className="w-full h-full relative">
+                        <div className="absolute top-0 left-0 bg-blue-500 text-white text-xs px-2 py-1">
+                          #{index + 1}
+                        </div>
+                      </div>
+                    </Rnd>
+                  ))}
+                </>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* 裁剪结果 */}
-        <div className="mt-8">
+        <div className="h-[260px] shrink-0 mt-4 overflow-auto border-t pt-4">
           <h2 className="text-2xl font-bold mb-4">
             裁剪结果
           </h2>
