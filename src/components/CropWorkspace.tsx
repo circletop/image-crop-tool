@@ -174,11 +174,11 @@ export default function CropWorkspace() {
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden">
+    <div className="flex flex-col lg:flex-row h-screen w-screen overflow-hidden">
       {/* 左侧 */}
-      <div className="flex-1 flex flex-col p-4 overflow-hidden">
+      <div className="flex-1 flex flex-col p-2 md:p-4 overflow-hidden min-h-0">
         {/* 工具栏 */}
-        <div className="mb-4 flex flex-wrap gap-3">
+        <div className="mb-3 flex flex-wrap items-center gap-2">
           <input
             type="file"
             accept="image/*"
@@ -188,14 +188,14 @@ export default function CropWorkspace() {
 
           <button
             onClick={addCrop}
-            className="px-4 py-2 bg-blue-500 text-white rounded-xl"
+            className="px-3 py-2 text-sm md:text-base bg-blue-500 text-white rounded-xl"
           >
             新增裁剪框
           </button>
 
           <button
             onClick={handleCrop}
-            className="px-4 py-2 bg-green-500 text-white rounded-xl"
+            className="px-3 py-2 text-sm md:text-base bg-green-500 text-white rounded-xl"
           >
             开始裁剪
           </button>
@@ -205,7 +205,7 @@ export default function CropWorkspace() {
                 Math.max(prev - 0.1, 0.2)
               )
             }
-            className="px-4 py-2 bg-gray-200 rounded-xl"
+            className="px-3 py-2 text-sm md:text-base bg-gray-200 rounded-xl"
           >
             缩小
           </button>
@@ -215,7 +215,7 @@ export default function CropWorkspace() {
                 Math.min(prev + 0.1, 5)
               )
             }
-            className="px-4 py-2 bg-gray-200 rounded-xl"
+            className="px-3 py-2 text-sm md:text-base bg-gray-200 rounded-xl"
           >
             放大
           </button>
@@ -226,16 +226,19 @@ export default function CropWorkspace() {
 
           <button
             onClick={downloadAll}
-            className="px-4 py-2 bg-black text-white rounded-xl"
+            className="px-3 py-2 text-sm md:text-base bg-black text-white rounded-xl"
           >
             批量下载
           </button>
         </div>
 
         {/* 图片区域 */}
-        <div className="flex-1 min-h-0 mt-2">
+        <div className="flex-1 min-h-0 mt-2 overflow-hidden">
           <div
             ref={scrollRef}
+            style={{
+              touchAction: "none",
+            }}
             className="w-full h-full overflow-auto rounded-2xl border bg-[#f5f5f5]"
           >
             <div
@@ -252,7 +255,11 @@ export default function CropWorkspace() {
                     src={image}
                     alt=""
                     draggable={false}
-                    className="max-w-none select-none"
+                    className="
+                    max-w-none
+                    select-none
+                    touch-none
+                  "
                   />
 
                   {crops.map((crop, index) => (
@@ -308,7 +315,13 @@ export default function CropWorkspace() {
             裁剪结果
           </h2>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="
+            grid
+            grid-cols-2
+            sm:grid-cols-3
+            lg:grid-cols-4
+            gap-3
+          ">
             {results.map((item, index) => (
               <div
                 key={item.id}
@@ -335,7 +348,17 @@ export default function CropWorkspace() {
       </div>
 
       {/* 右侧参数栏 */}
-      <div className="w-[320px] bg-white border-l overflow-auto">
+      <div className="
+        w-full
+        lg:w-[320px]
+        bg-white
+        border-t
+        lg:border-t-0
+        lg:border-l
+        overflow-auto
+        max-h-[40vh]
+        lg:max-h-none
+      ">
         <div className="p-5">
           <h2 className="text-3xl font-bold mb-6">
             裁剪选项
