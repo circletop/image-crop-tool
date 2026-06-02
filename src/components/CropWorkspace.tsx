@@ -25,12 +25,15 @@ export default function CropWorkspace() {
   // 滚动容器
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
+  // 画布容器
+  const canvasRef = useRef<HTMLDivElement | null>(null);
+
   const [image, setImage] = useState<string | null>(null);
 
   const [crops, setCrops] = useState<CropArea[]>([]);
   // 当前选中的裁剪框ID
   const [selectedCropId, setSelectedCropId] = useState<number | null>(null);
-  
+
   useEffect(() => {
     const handleDelete = (e: KeyboardEvent) => {
       if (
@@ -66,6 +69,131 @@ export default function CropWorkspace() {
   const [results, setResults] = useState<CropResult[]>([]);
   // 缩放比例
   const [scale, setScale] = useState(1);
+  const MIN_SCALE = 0.2;
+  const MAX_SCALE = 5;
+  const zoomAtPoint = (
+  clientX: number,
+  clientY: number,
+  deltaY: number
+  ) => {
+    const container = scrollRef.current;
+
+    if (!container) return;
+
+    const rect =
+      container.getBoundingClientRect();
+
+    const offsetX =
+      clientX - rect.left;
+
+    const offsetY =
+      clientY - rect.top;
+
+    const worldX =
+      (container.scrollLeft + offsetX) /
+      scale;
+
+    const worldY =
+      (container.scrollTop + offsetY) /
+      scale;
+
+    const zoomFactor =
+      deltaY > 0 ? 0.9 : 1.1;
+
+    const nextScale = Math.min(
+      MAX_SCALE,
+      Math.max(
+        MIN_SCALE,
+        scale * zoomFactor
+      )
+    );
+
+    if (nextScale === scale) return;
+
+    setScale(nextScale);
+
+    requestAnimationFrame(() => {
+      container.scrollLeft =
+        worldX * nextScale - offsetX;
+
+      container.scrollTop =
+        worldY * nextScale - offsetY;
+    });
+  };
+
+  // 重置缩放快捷键 Ctrl + 0
+  useEffect(() => {
+    const handleResetZoom = (
+      e: KeyboardEvent
+    ) => {
+      if (
+        e.ctrlKey &&
+        e.key === "0"
+      ) {
+        e.preventDefault();
+
+        setScale(1);
+      }
+    };
+
+    window.addEventListener(
+      "keydown",
+      handleResetZoom
+    );
+
+    return () => {
+      window.removeEventListener(
+        "keydown",
+        handleResetZoom
+      );
+    };
+  }, []);
+
+  // 缩放快捷键 Ctrl + "+" / Ctrl + "-"
+  useEffect(() => {
+    const handleZoomHotkey = (
+      e: KeyboardEvent
+    ) => {
+      if (!e.ctrlKey) return;
+
+      if (
+        e.key === "=" ||
+        e.key === "+"
+      ) {
+        e.preventDefault();
+
+        setScale((prev) =>
+          Math.min(
+            prev * 1.1,
+            MAX_SCALE
+          )
+        );
+      }
+
+      if (e.key === "-") {
+        e.preventDefault();
+
+        setScale((prev) =>
+          Math.max(
+            prev * 0.9,
+            MIN_SCALE
+          )
+        );
+      }
+    };
+
+    window.addEventListener(
+      "keydown",
+      handleZoomHotkey
+    );
+
+    return () => {
+      window.removeEventListener(
+        "keydown",
+        handleZoomHotkey
+      );
+    };
+  }, []);
 
   // 是否在拖动平移
   const [isPanning, setIsPanning] = useState(false);
@@ -306,6 +434,17 @@ export default function CropWorkspace() {
         <div className="flex-1 min-h-0 mt-2 overflow-hidden">
           <div
             ref={scrollRef}
+            onWheel={(e) => {
+              if (!e.ctrlKey) return;
+
+              e.preventDefault();
+
+              zoomAtPoint(
+                e.clientX,
+                e.clientY,
+                e.deltaY
+              );
+            }}
             onMouseDown={(e) => {
               if (!spacePressed) return;
 
@@ -362,6 +501,7 @@ export default function CropWorkspace() {
             `}
           >
             <div
+              ref={canvasRef}
               className="relative inline-block"
               style={{
                 transform: `scale(${scale})`,
