@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Rnd } from "react-rnd";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
@@ -28,10 +28,80 @@ export default function CropWorkspace() {
   const [image, setImage] = useState<string | null>(null);
 
   const [crops, setCrops] = useState<CropArea[]>([]);
+  // 当前选中的裁剪框ID
+  const [selectedCropId, setSelectedCropId] = useState<number | null>(null);
+  
+  useEffect(() => {
+    const handleDelete = (e: KeyboardEvent) => {
+      if (
+        e.key !== "Delete" &&
+        e.key !== "Backspace"
+      )
+        return;
+
+      if (!selectedCropId) return;
+
+      setCrops((prev) =>
+        prev.filter(
+          (crop) => crop.id !== selectedCropId
+        )
+      );
+
+      setSelectedCropId(null);
+    };
+
+    window.addEventListener(
+      "keydown",
+      handleDelete
+    );
+
+    return () => {
+      window.removeEventListener(
+        "keydown",
+        handleDelete
+      );
+    };
+  }, [selectedCropId]);
 
   const [results, setResults] = useState<CropResult[]>([]);
   // 缩放比例
   const [scale, setScale] = useState(1);
+
+  // 是否在拖动平移
+  const [isPanning, setIsPanning] = useState(false);
+
+  const panStartRef = useRef({
+    x: 0,
+    y: 0,
+    scrollLeft: 0,
+    scrollTop: 0,
+  });
+
+  const [spacePressed, setSpacePressed] = useState(false);
+
+  // 监听空格键控制平移
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === "Space") {
+        e.preventDefault();
+        setSpacePressed(true);
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code === "Space") {
+        setSpacePressed(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, []);
 
   // 上传图片
   const handleUpload = (
@@ -236,10 +306,60 @@ export default function CropWorkspace() {
         <div className="flex-1 min-h-0 mt-2 overflow-hidden">
           <div
             ref={scrollRef}
+            onMouseDown={(e) => {
+              if (!spacePressed) return;
+
+              const container = scrollRef.current;
+
+              if (!container) return;
+
+              setIsPanning(true);
+
+              panStartRef.current = {
+                x: e.clientX,
+                y: e.clientY,
+                scrollLeft: container.scrollLeft,
+                scrollTop: container.scrollTop,
+              };
+            }}
+            onMouseMove={(e) => {
+              if (!isPanning) return;
+
+              const container = scrollRef.current;
+
+              if (!container) return;
+
+              const dx =
+                e.clientX - panStartRef.current.x;
+
+              const dy =
+                e.clientY - panStartRef.current.y;
+
+              container.scrollLeft =
+                panStartRef.current.scrollLeft - dx;
+
+              container.scrollTop =
+                panStartRef.current.scrollTop - dy;
+            }}
+            onMouseUp={() => {
+              setIsPanning(false);
+            }}
+            onMouseLeave={() => {
+              setIsPanning(false);
+            }}
             style={{
               touchAction: "none",
             }}
-            className="w-full h-full overflow-auto rounded-2xl border bg-[#f5f5f5]"
+            className={`
+              w-full
+              h-full
+              overflow-auto
+              rounded-2xl
+              border
+              bg-[#f5f5f5]
+              ${spacePressed ? "cursor-grab" : ""}
+              ${isPanning ? "cursor-grabbing" : ""}
+            `}
           >
             <div
               className="relative inline-block"
@@ -264,6 +384,9 @@ export default function CropWorkspace() {
 
                   {crops.map((crop, index) => (
                     <Rnd
+                      onMouseDown={() => {
+                        setSelectedCropId(crop.id);
+                      }}
                       key={crop.id}
                       size={{
                         width: crop.width,
@@ -294,7 +417,14 @@ export default function CropWorkspace() {
                           y: position.y,
                         });
                       }}
-                      className="border-2 border-blue-500 bg-blue-500/10"
+                      className={`
+                        border-2
+                        ${
+                          selectedCropId === crop.id
+                            ? "border-green-500 bg-green-500/10"
+                            : "border-blue-500 bg-blue-500/10"
+                        }
+                      `}
                     >
                       <div className="w-full h-full relative">
                         <div className="absolute top-0 left-0 bg-blue-500 text-white text-xs px-2 py-1">
