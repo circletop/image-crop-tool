@@ -160,6 +160,13 @@ npm run build
 - 单张图片下载
 - ZIP 批量下载
 
+## 版本与帮助文档规则
+
+- 用户确认本次修改完成后，需要把变更内容同步写入 `src/constants/help.ts` 的更新记录。
+- 同步更新 `src/constants/help.ts` 中的 `APP_VERSION` 和帮助正文里的当前版本号。
+- 如本次修改形成新的发布版本，同时同步更新 `package.json` 与 `package-lock.json` 中的项目版本号。
+- 更新记录使用中文，内容简洁描述实际完成的变更。
+
 ## Git 与工作区规则
 
 - 工作区中可能存在用户改动。不要回滚或覆盖无关改动。
