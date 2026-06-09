@@ -13,6 +13,7 @@ interface ImageCanvasProps {
   imageRef: React.RefObject<HTMLImageElement | null>;
   scrollRef: React.RefObject<HTMLDivElement | null>;
   canvasRef: React.RefObject<HTMLDivElement | null>;
+  onImageLoad: () => void;
   onSelectCrop: (id: number) => void;
   onUpdateCrop: (
     id: number,
@@ -38,6 +39,7 @@ export function ImageCanvas({
   imageRef,
   scrollRef,
   canvasRef,
+  onImageLoad,
   onSelectCrop,
   onUpdateCrop,
   onZoomAtPoint,
@@ -92,6 +94,7 @@ export function ImageCanvas({
                 src={image}
                 alt=""
                 draggable={false}
+                onLoad={onImageLoad}
                 className="
                   max-w-none
                   select-none
@@ -115,10 +118,33 @@ export function ImageCanvas({
                   }}
                   bounds="parent"
                   scale={scale}
+                  lockAspectRatio={
+                    crop.aspectRatio ?? false
+                  }
                   onDragStop={(e, d) => {
                     onUpdateCrop(crop.id, {
                       x: d.x,
                       y: d.y,
+                    });
+                  }}
+                  onDrag={(e, d) => {
+                    onUpdateCrop(crop.id, {
+                      x: d.x,
+                      y: d.y,
+                    });
+                  }}
+                  onResize={(
+                    e,
+                    direction,
+                    ref,
+                    delta,
+                    position
+                  ) => {
+                    onUpdateCrop(crop.id, {
+                      width: parseInt(ref.style.width),
+                      height: parseInt(ref.style.height),
+                      x: position.x,
+                      y: position.y,
                     });
                   }}
                   onResizeStop={(
@@ -146,7 +172,7 @@ export function ImageCanvas({
                 >
                   <div className="w-full h-full relative">
                     <div className="absolute top-0 left-0 bg-blue-500 text-white text-xs px-2 py-1">
-                      #{index + 1}
+                      {crop.name || `#${index + 1}`}
                     </div>
                   </div>
                 </Rnd>

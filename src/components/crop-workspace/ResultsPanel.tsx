@@ -34,6 +34,10 @@ export function ResultsPanel({
             key={item.id}
             className="bg-white rounded-2xl shadow p-3 border"
           >
+            <div className="mb-2 truncate font-medium">
+              {item.name || `裁剪结果 ${index + 1}`}
+            </div>
+
             <img
               src={item.url}
               alt=""

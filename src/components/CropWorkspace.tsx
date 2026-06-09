@@ -32,6 +32,7 @@ export default function CropWorkspace() {
           imageRef={workspace.imageRef}
           scrollRef={workspace.scrollRef}
           canvasRef={workspace.canvasRef}
+          onImageLoad={workspace.handleImageLoad}
           onSelectCrop={workspace.setSelectedCropId}
           onUpdateCrop={workspace.updateCrop}
           onZoomAtPoint={workspace.zoomAtPoint}
@@ -48,8 +49,12 @@ export default function CropWorkspace() {
 
       <CropOptionsPanel
         crops={workspace.crops}
+        selectedCropId={workspace.selectedCropId}
+        imageRef={workspace.imageRef}
+        imageLoadVersion={workspace.imageLoadVersion}
         onUpdateCrop={workspace.updateCrop}
         onRemoveCrop={workspace.removeCrop}
+        onSelectCrop={workspace.setSelectedCropId}
       />
     </div>
   );

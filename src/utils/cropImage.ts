@@ -44,6 +44,7 @@ export async function cropImageByAreas(
 
     results.push({
       id: crop.id,
+      name: crop.name,
       blob,
       url: URL.createObjectURL(blob),
     });

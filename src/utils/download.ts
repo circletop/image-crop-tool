@@ -2,11 +2,19 @@ import { saveAs } from "file-saver";
 import JSZip from "jszip";
 import type { CropResult } from "@/types/crop";
 
+function getCropFileName(item: CropResult, index: number) {
+  const safeName = item.name
+    .trim()
+    .replace(/[<>:"/\\|?*]/g, "-");
+
+  return `${safeName || `crop-${index + 1}`}.png`;
+}
+
 export function downloadCropResult(
   item: CropResult,
   index: number
 ) {
-  saveAs(item.blob, `crop-${index + 1}.png`);
+  saveAs(item.blob, getCropFileName(item, index));
 }
 
 export async function downloadCropResultsZip(
@@ -15,7 +23,7 @@ export async function downloadCropResultsZip(
   const zip = new JSZip();
 
   results.forEach((item, index) => {
-    zip.file(`crop-${index + 1}.png`, item.blob);
+    zip.file(getCropFileName(item, index), item.blob);
   });
 
   const content = await zip.generateAsync({

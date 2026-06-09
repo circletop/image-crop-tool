@@ -3,7 +3,7 @@
 import { useCallback, useRef, useState } from "react";
 import type { CropArea, CropResult } from "@/types/crop";
 import {
-  addCropArea,
+  createCropArea,
   removeCropArea,
   updateCropArea,
 } from "@/utils/cropAreas";
@@ -26,6 +26,8 @@ export function useCropWorkspace() {
   const [selectedCropId, setSelectedCropId] =
     useState<number | null>(null);
   const [results, setResults] = useState<CropResult[]>([]);
+  const [imageLoadVersion, setImageLoadVersion] =
+    useState(0);
 
   const {
     scale,
@@ -59,7 +61,14 @@ export function useCropWorkspace() {
   };
 
   const addCrop = useCallback(() => {
-    setCrops((prev) => addCropArea(prev));
+    const crop = createCropArea(crops.length);
+
+    setCrops((prev) => [...prev, crop]);
+    setSelectedCropId(crop.id);
+  }, [crops.length]);
+
+  const handleImageLoad = useCallback(() => {
+    setImageLoadVersion((prev) => prev + 1);
   }, []);
 
   const updateCrop = useCallback(
@@ -118,11 +127,13 @@ export function useCropWorkspace() {
     crops,
     selectedCropId,
     results,
+    imageLoadVersion,
     scale,
     isPanning,
     spacePressed,
     setSelectedCropId,
     handleUpload,
+    handleImageLoad,
     addCrop,
     updateCrop,
     removeCrop,
