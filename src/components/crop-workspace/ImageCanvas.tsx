@@ -1,6 +1,10 @@
 "use client";
 
-import { Rnd } from "react-rnd";
+import { useState } from "react";
+import { AlignmentGuides } from "@/components/crop-workspace/AlignmentGuides";
+import { CropBoxLayer } from "@/components/crop-workspace/CropBoxLayer";
+import { useAlignmentGuides } from "@/hooks/useAlignmentGuides";
+import type { ElementSize } from "@/types/canvas";
 import type { CropArea } from "@/types/crop";
 
 interface ImageCanvasProps {
@@ -47,6 +51,39 @@ export function ImageCanvas({
   onMovePan,
   onStopPan,
 }: ImageCanvasProps) {
+  const [imageBounds, setImageBounds] = useState<ElementSize>({
+    width: 0,
+    height: 0,
+  });
+
+  const getCanvasSize = () => ({
+    width: imageRef.current?.clientWidth ?? 0,
+    height: imageRef.current?.clientHeight ?? 0,
+  });
+
+  const {
+    guides,
+    clearGuides,
+    commitMovingCrop,
+    commitResizedCrop,
+    previewMovingGuides,
+    previewResizedGuides,
+  } = useAlignmentGuides({
+    crops,
+    getCanvasSize,
+    onUpdateCrop,
+  });
+
+  const handleImageLoaded = (
+    e: React.SyntheticEvent<HTMLImageElement>
+  ) => {
+    setImageBounds({
+      width: e.currentTarget.clientWidth,
+      height: e.currentTarget.clientHeight,
+    });
+    onImageLoad();
+  };
+
   return (
     <div className="flex-1 min-h-0 mt-2 overflow-hidden">
       <div
@@ -68,16 +105,11 @@ export function ImageCanvas({
         style={{
           touchAction: "none",
         }}
-        className={`
-          w-full
-          h-full
-          overflow-auto
-          rounded-2xl
-          border
-          bg-[#f5f5f5]
-          ${spacePressed ? "cursor-grab" : ""}
-          ${isPanning ? "cursor-grabbing" : ""}
-        `}
+        className={[
+          "w-full h-full overflow-auto rounded-2xl border bg-[#f5f5f5]",
+          spacePressed ? "cursor-grab" : "",
+          isPanning ? "cursor-grabbing" : "",
+        ].join(" ")}
       >
         <div
           ref={canvasRef}
@@ -94,89 +126,37 @@ export function ImageCanvas({
                 src={image}
                 alt=""
                 draggable={false}
-                onLoad={onImageLoad}
-                className="
-                  max-w-none
-                  select-none
-                  touch-none
-                "
+                onLoad={handleImageLoaded}
+                className="max-w-none select-none touch-none"
               />
 
-              {crops.map((crop, index) => (
-                <Rnd
-                  key={crop.id}
-                  onMouseDown={() => {
-                    onSelectCrop(crop.id);
-                  }}
-                  size={{
-                    width: crop.width,
-                    height: crop.height,
-                  }}
-                  position={{
-                    x: crop.x,
-                    y: crop.y,
-                  }}
-                  bounds="parent"
-                  scale={scale}
-                  lockAspectRatio={
-                    crop.aspectRatio ?? false
-                  }
-                  onDragStop={(e, d) => {
-                    onUpdateCrop(crop.id, {
-                      x: d.x,
-                      y: d.y,
-                    });
-                  }}
-                  onDrag={(e, d) => {
-                    onUpdateCrop(crop.id, {
-                      x: d.x,
-                      y: d.y,
-                    });
-                  }}
-                  onResize={(
-                    e,
+              <CropBoxLayer
+                crops={crops}
+                selectedCropId={selectedCropId}
+                scale={scale}
+                onSelectCrop={onSelectCrop}
+                onMove={previewMovingGuides}
+                onMoveEnd={(crop, x, y) => {
+                  commitMovingCrop(crop, x, y);
+                  clearGuides();
+                }}
+                onResize={previewResizedGuides}
+                onResizeEnd={(crop, direction, ref, position) => {
+                  commitResizedCrop(
+                    crop,
                     direction,
                     ref,
-                    delta,
                     position
-                  ) => {
-                    onUpdateCrop(crop.id, {
-                      width: parseInt(ref.style.width),
-                      height: parseInt(ref.style.height),
-                      x: position.x,
-                      y: position.y,
-                    });
-                  }}
-                  onResizeStop={(
-                    e,
-                    direction,
-                    ref,
-                    delta,
-                    position
-                  ) => {
-                    onUpdateCrop(crop.id, {
-                      width: parseInt(ref.style.width),
-                      height: parseInt(ref.style.height),
-                      x: position.x,
-                      y: position.y,
-                    });
-                  }}
-                  className={`
-                    border-2
-                    ${
-                      selectedCropId === crop.id
-                        ? "border-green-500 bg-green-500/10"
-                        : "border-blue-500 bg-blue-500/10"
-                    }
-                  `}
-                >
-                  <div className="w-full h-full relative">
-                    <div className="absolute top-0 left-0 bg-blue-500 text-white text-xs px-2 py-1">
-                      {crop.name || `#${index + 1}`}
-                    </div>
-                  </div>
-                </Rnd>
-              ))}
+                  );
+                  clearGuides();
+                }}
+              />
+
+              {/* ImageCanvas 只组合图层；参考线和吸附细节由 useAlignmentGuides 管理。 */}
+              <AlignmentGuides
+                guides={guides}
+                bounds={imageBounds}
+              />
             </>
           )}
         </div>

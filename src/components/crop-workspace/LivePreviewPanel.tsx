@@ -26,6 +26,7 @@ export function LivePreviewPanel({
 
     if (!ctx) return;
 
+    // 预览和最终导出使用同一套坐标换算，保证缩放后看到的结果一致。
     const scaleX = image.naturalWidth / image.clientWidth;
     const scaleY = image.naturalHeight / image.clientHeight;
 

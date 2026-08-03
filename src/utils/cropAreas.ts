@@ -3,14 +3,41 @@ import type { CropArea } from "@/types/crop";
 const DEFAULT_CROP_SIZE = 300;
 const DEFAULT_CROP_POSITION = 100;
 
-export function createCropArea(index: number): CropArea {
+interface CreateCropAreaOptions {
+  canvasWidth?: number;
+  canvasHeight?: number;
+}
+
+export function createCropArea(
+  index: number,
+  options: CreateCropAreaOptions = {}
+): CropArea {
+  // 默认尺寸不能超过当前图片显示尺寸，否则小图会一创建就越界。
+  const width = Math.max(
+    1,
+    Math.min(DEFAULT_CROP_SIZE, options.canvasWidth ?? DEFAULT_CROP_SIZE)
+  );
+  const height = Math.max(
+    1,
+    Math.min(DEFAULT_CROP_SIZE, options.canvasHeight ?? DEFAULT_CROP_SIZE)
+  );
+  // 默认位置优先放在 100px 附近，空间不足时贴近可显示边界。
+  const x = Math.min(
+    DEFAULT_CROP_POSITION,
+    Math.max(0, (options.canvasWidth ?? width) - width)
+  );
+  const y = Math.min(
+    DEFAULT_CROP_POSITION,
+    Math.max(0, (options.canvasHeight ?? height) - height)
+  );
+
   return {
     id: Date.now(),
     name: `裁剪区域 ${index + 1}`,
-    x: DEFAULT_CROP_POSITION,
-    y: DEFAULT_CROP_POSITION,
-    width: DEFAULT_CROP_SIZE,
-    height: DEFAULT_CROP_SIZE,
+    x,
+    y,
+    width,
+    height,
     aspectRatio: null,
   };
 }

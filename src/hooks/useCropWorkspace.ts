@@ -1,17 +1,13 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import type { CropArea, CropResult } from "@/types/crop";
-import {
-  createCropArea,
-  removeCropArea,
-  updateCropArea,
-} from "@/utils/cropAreas";
+import type { CropResult } from "@/types/crop";
 import { cropImageByAreas } from "@/utils/cropImage";
 import {
   downloadCropResult,
   downloadCropResultsZip,
 } from "@/utils/download";
+import { useCropAreas } from "@/hooks/useCropAreas";
 import { useCanvasPan } from "@/hooks/useCanvasPan";
 import { useCanvasZoom } from "@/hooks/useCanvasZoom";
 import { useCropHotkeys } from "@/hooks/useCropHotkeys";
@@ -22,12 +18,23 @@ export function useCropWorkspace() {
   const canvasRef = useRef<HTMLDivElement | null>(null);
 
   const [image, setImage] = useState<string | null>(null);
-  const [crops, setCrops] = useState<CropArea[]>([]);
-  const [selectedCropId, setSelectedCropId] =
-    useState<number | null>(null);
   const [results, setResults] = useState<CropResult[]>([]);
   const [imageLoadVersion, setImageLoadVersion] =
     useState(0);
+
+  const {
+    crops,
+    selectedCropId,
+    addCrop,
+    nudgeSelectedCrop,
+    removeCrop,
+    removeSelectedCrop,
+    resetCrops,
+    setSelectedCropId,
+    updateCrop,
+  } = useCropAreas({
+    imageRef,
+  });
 
   const {
     scale,
@@ -55,39 +62,13 @@ export function useCropWorkspace() {
     const url = URL.createObjectURL(file);
 
     setImage(url);
-    setCrops([]);
+    resetCrops();
     setResults([]);
-    setSelectedCropId(null);
   };
-
-  const addCrop = useCallback(() => {
-    const crop = createCropArea(crops.length);
-
-    setCrops((prev) => [...prev, crop]);
-    setSelectedCropId(crop.id);
-  }, [crops.length]);
 
   const handleImageLoad = useCallback(() => {
     setImageLoadVersion((prev) => prev + 1);
   }, []);
-
-  const updateCrop = useCallback(
-    (id: number, data: Partial<CropArea>) => {
-      setCrops((prev) => updateCropArea(prev, id, data));
-    },
-    []
-  );
-
-  const removeCrop = useCallback((id: number) => {
-    setCrops((prev) => removeCropArea(prev, id));
-    setSelectedCropId((prev) => (prev === id ? null : prev));
-  }, []);
-
-  const removeSelectedCrop = useCallback(() => {
-    if (!selectedCropId) return;
-
-    removeCrop(selectedCropId);
-  }, [removeCrop, selectedCropId]);
 
   const handleCrop = async () => {
     if (!imageRef.current) return;
@@ -114,6 +95,7 @@ export function useCropWorkspace() {
   useCropHotkeys({
     selectedCropId,
     onDeleteSelected: removeSelectedCrop,
+    onNudgeSelected: nudgeSelectedCrop,
     onResetZoom: resetZoom,
     onZoomIn: increaseZoom,
     onZoomOut: decreaseZoom,

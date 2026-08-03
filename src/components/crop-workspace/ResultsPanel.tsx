@@ -20,15 +20,7 @@ export function ResultsPanel({
         裁剪结果
       </h2>
 
-      <div
-        className="
-          grid
-          grid-cols-2
-          sm:grid-cols-3
-          lg:grid-cols-4
-          gap-3
-        "
-      >
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         {results.map((item, index) => (
           <div
             key={item.id}

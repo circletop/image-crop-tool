@@ -54,6 +54,7 @@ export function useCanvasPan(
 
     setIsPanning(true);
 
+    // 记录按下瞬间的鼠标和滚动位置，后续移动用差值计算平移距离。
     panStartRef.current = {
       x: clientX,
       y: clientY,
@@ -72,6 +73,7 @@ export function useCanvasPan(
     const dx = clientX - panStartRef.current.x;
     const dy = clientY - panStartRef.current.y;
 
+    // 鼠标向右/下拖动时，滚动条需要反向变化，画布视觉上才会跟随手势移动。
     container.scrollLeft =
       panStartRef.current.scrollLeft - dx;
     container.scrollTop =

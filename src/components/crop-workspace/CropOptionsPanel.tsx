@@ -47,19 +47,7 @@ export function CropOptionsPanel({
     null;
 
   return (
-    <div
-      className="
-        w-full
-        lg:w-[320px]
-        bg-white
-        border-t
-        lg:border-t-0
-        lg:border-l
-        overflow-auto
-        max-h-[40vh]
-        lg:max-h-none
-      "
-    >
+    <div className="w-full lg:w-[320px] bg-white border-t lg:border-t-0 lg:border-l overflow-auto max-h-[40vh] lg:max-h-none">
       <div className="p-5">
         <LivePreviewPanel
           crop={selectedCrop}
@@ -75,17 +63,12 @@ export function CropOptionsPanel({
           <div
             key={crop.id}
             onMouseDown={() => onSelectCrop(crop.id)}
-            className={`
-              mb-6
-              border
-              rounded-2xl
-              p-4
-              ${
+            className={[
+              "mb-6 border rounded-2xl p-4",
                 selectedCropId === crop.id
                   ? "border-green-500"
-                  : ""
-              }
-            `}
+                  : "",
+            ].join(" ")}
           >
             <div className="flex justify-between items-center mb-4">
               <div className="font-bold">

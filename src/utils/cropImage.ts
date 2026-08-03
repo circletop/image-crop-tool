@@ -12,6 +12,7 @@ export async function cropImageByAreas(
   image: HTMLImageElement,
   crops: CropArea[]
 ): Promise<CropResult[]> {
+  // 裁剪框坐标基于页面显示尺寸，真正截图时需要换算回图片原始像素。
   const scaleX = image.naturalWidth / image.clientWidth;
   const scaleY = image.naturalHeight / image.clientHeight;
   const results: CropResult[] = [];
@@ -26,6 +27,7 @@ export async function cropImageByAreas(
 
     if (!ctx) continue;
 
+    // drawImage 前四个参数取原图区域，后四个参数把结果绘制到导出画布。
     ctx.drawImage(
       image,
       crop.x * scaleX,

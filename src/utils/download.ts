@@ -3,6 +3,7 @@ import JSZip from "jszip";
 import type { CropResult } from "@/types/crop";
 
 function getCropFileName(item: CropResult, index: number) {
+  // 浏览器下载文件名需要过滤系统保留字符，空名称则回退到序号命名。
   const safeName = item.name
     .trim()
     .replace(/[<>:"/\\|?*]/g, "-");

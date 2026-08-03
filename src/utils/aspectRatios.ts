@@ -66,6 +66,7 @@ export function applyAspectRatio(
   return {
     ...crop,
     aspectRatio: ratio,
+    // 切换比例时固定当前宽度，只重算高度，避免裁剪框位置突然跳动。
     height: Math.max(1, Math.round(crop.width / ratio)),
   };
 }
@@ -84,6 +85,7 @@ export function updateCropNumericField(
   if (field === "width") {
     return {
       width: value,
+      // 锁定比例后，编辑宽高任一项都同步重算另一项。
       height: Math.max(
         1,
         Math.round(value / crop.aspectRatio)
@@ -94,6 +96,7 @@ export function updateCropNumericField(
   if (field === "height") {
     return {
       height: value,
+      // 保持和宽度分支一致的四舍五入策略，避免连续输入时尺寸抖动。
       width: Math.max(
         1,
         Math.round(value * crop.aspectRatio)

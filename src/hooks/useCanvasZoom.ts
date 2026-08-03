@@ -40,6 +40,7 @@ export function useCanvasZoom(
       const rect = container.getBoundingClientRect();
       const offsetX = clientX - rect.left;
       const offsetY = clientY - rect.top;
+      // 先记录鼠标指向的画布坐标，缩放后再反推滚动位置，保持鼠标锚点不漂移。
       const worldX =
         (container.scrollLeft + offsetX) / scale;
       const worldY =
@@ -54,6 +55,7 @@ export function useCanvasZoom(
 
       setScale(nextScale);
 
+      // 等 transform 生效后再调整滚动条，避免用旧布局计算滚动位置。
       requestAnimationFrame(() => {
         container.scrollLeft =
           worldX * nextScale - offsetX;
