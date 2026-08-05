@@ -6,7 +6,9 @@ interface UseCropHotkeysOptions {
   selectedCropId: number | null;
   onDeleteSelected: () => void;
   onNudgeSelected: (dx: number, dy: number) => void;
+  onRedo: () => void;
   onResetZoom: () => void;
+  onUndo: () => void;
   onZoomIn: () => void;
   onZoomOut: () => void;
 }
@@ -52,11 +54,17 @@ function isAppZoomHotkey(e: KeyboardEvent) {
   );
 }
 
+function isUndoHotkey(e: KeyboardEvent) {
+  return (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z";
+}
+
 export function useCropHotkeys({
   selectedCropId,
   onDeleteSelected,
   onNudgeSelected,
+  onRedo,
   onResetZoom,
+  onUndo,
   onZoomIn,
   onZoomOut,
 }: UseCropHotkeysOptions) {
@@ -69,6 +77,19 @@ export function useCropHotkeys({
       handledEvents.add(e);
 
       if (isTextEditingTarget(e.target)) return;
+
+      if (isUndoHotkey(e)) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (e.shiftKey) {
+          onRedo();
+          return;
+        }
+
+        onUndo();
+        return;
+      }
 
       if (
         (e.key === "Delete" || e.key === "Backspace") &&
@@ -130,7 +151,9 @@ export function useCropHotkeys({
   }, [
     onDeleteSelected,
     onNudgeSelected,
+    onRedo,
     onResetZoom,
+    onUndo,
     onZoomIn,
     onZoomOut,
     selectedCropId,

@@ -24,13 +24,17 @@ export function useCropWorkspace() {
 
   const {
     crops,
+    canRedo,
+    canUndo,
     selectedCropId,
     addCrop,
     nudgeSelectedCrop,
     removeCrop,
     removeSelectedCrop,
+    redoCropChange,
     resetCrops,
     setSelectedCropId,
+    undoCropChange,
     updateCrop,
   } = useCropAreas({
     imageRef,
@@ -96,7 +100,9 @@ export function useCropWorkspace() {
     selectedCropId,
     onDeleteSelected: removeSelectedCrop,
     onNudgeSelected: nudgeSelectedCrop,
+    onRedo: redoCropChange,
     onResetZoom: resetZoom,
+    onUndo: undoCropChange,
     onZoomIn: increaseZoom,
     onZoomOut: decreaseZoom,
   });
@@ -107,6 +113,8 @@ export function useCropWorkspace() {
     canvasRef,
     image,
     crops,
+    canRedo,
+    canUndo,
     selectedCropId,
     results,
     imageLoadVersion,
@@ -119,6 +127,7 @@ export function useCropWorkspace() {
     addCrop,
     updateCrop,
     removeCrop,
+    redoCropChange,
     handleCrop,
     downloadSingle,
     downloadAll,
@@ -128,5 +137,6 @@ export function useCropWorkspace() {
     startPan,
     movePan,
     stopPan,
+    undoCropChange,
   };
 }

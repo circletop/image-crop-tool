@@ -1,6 +1,8 @@
 "use client";
 
 interface WorkspaceToolbarProps {
+  canRedo: boolean;
+  canUndo: boolean;
   scale: number;
   onUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onAddCrop: () => void;
@@ -8,9 +10,13 @@ interface WorkspaceToolbarProps {
   onZoomOut: () => void;
   onZoomIn: () => void;
   onDownloadAll: () => void;
+  onRedo: () => void;
+  onUndo: () => void;
 }
 
 export function WorkspaceToolbar({
+  canRedo,
+  canUndo,
   scale,
   onUpload,
   onAddCrop,
@@ -18,7 +24,12 @@ export function WorkspaceToolbar({
   onZoomOut,
   onZoomIn,
   onDownloadAll,
+  onRedo,
+  onUndo,
 }: WorkspaceToolbarProps) {
+  const historyButtonClass =
+    "px-3 py-2 text-sm md:text-base bg-gray-200 rounded-xl disabled:cursor-not-allowed disabled:opacity-40";
+
   return (
     <div className="mb-3 flex flex-wrap items-center gap-2">
       <input
@@ -40,6 +51,22 @@ export function WorkspaceToolbar({
         className="px-3 py-2 text-sm md:text-base bg-green-500 text-white rounded-xl"
       >
         开始裁剪
+      </button>
+
+      <button
+        onClick={onUndo}
+        disabled={!canUndo}
+        className={historyButtonClass}
+      >
+        撤销
+      </button>
+
+      <button
+        onClick={onRedo}
+        disabled={!canRedo}
+        className={historyButtonClass}
+      >
+        重做
       </button>
 
       <button

@@ -13,6 +13,8 @@ export default function CropWorkspace() {
     <div className="flex flex-col lg:flex-row h-screen w-screen overflow-hidden">
       <div className="flex-1 flex flex-col p-2 md:p-4 overflow-hidden min-h-0">
         <WorkspaceToolbar
+          canRedo={workspace.canRedo}
+          canUndo={workspace.canUndo}
           scale={workspace.scale}
           onUpload={workspace.handleUpload}
           onAddCrop={workspace.addCrop}
@@ -20,6 +22,8 @@ export default function CropWorkspace() {
           onZoomOut={workspace.decreaseZoom}
           onZoomIn={workspace.increaseZoom}
           onDownloadAll={workspace.downloadAll}
+          onRedo={workspace.redoCropChange}
+          onUndo={workspace.undoCropChange}
         />
 
         <ImageCanvas
